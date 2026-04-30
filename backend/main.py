@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from groq import Groq
 from supabase import create_client
 from sentence_transformers import SentenceTransformer
+from transformers import pipeline
 import os
 from dotenv import load_dotenv
 
@@ -21,11 +22,62 @@ app.add_middleware(
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
+classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+
+INTENTS = [
+    "match programs to applicant profile",
+    "search programs by location or state",
+    "ask about application strategy or tips",
+    "ask about visa sponsorship",
+    "ask about observerships or clinical experience",
+    "general residency question"
+]
+
+def classify_intent(message: str) -> str:
+    result = classifier(message, INTENTS)
+    return result["labels"][0]
+
+def retrieve_programs(query: str, specialty: str = "", limit: int = 6):
+    embedding = encoder.encode(query).tolist()
+    if specialty:
+        result = supabase.rpc("match_programs_by_specialty", {
+            "query_embedding": embedding,
+            "match_count": limit,
+            "filter_specialty": specialty
+        }).execute()
+        if result.data:
+            return result.data
+    result = supabase.rpc("match_programs", {
+        "query_embedding": embedding,
+        "match_count": limit
+    }).execute()
+    return result.data
+
+def format_programs(programs):
+    return "\n".join([
+        f"- {p['name']} ({p['location']}): "
+        f"IMG friendly={p['img_friendly']}, "
+        f"IMG match rate={p['match_rate_img']}, "
+        f"visa={p['visa_sponsorship']}, "
+        f"description: {p['description']}"
+        for p in programs
+    ])
+
+def llm(prompt: str) -> str:
+    response = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
 
 class Profile(BaseModel):
     step2_score: int
     specialty: str
     grad_type: str
+
+class ChatMessage(BaseModel):
+    message: str
+    specialty: str = ""
 
 @app.get("/health")
 def health():
@@ -33,32 +85,13 @@ def health():
 
 @app.post("/match")
 def match(profile: Profile):
-    # Step 1: Embed the user query
     query = f"{profile.specialty} {profile.grad_type} Step2 {profile.step2_score}"
-    embedding = encoder.encode(query).tolist()
+    programs = retrieve_programs(query, profile.specialty)
+    context = format_programs(programs)
 
-    # Step 2: Retrieve top matching programs from Supabase
-    result = supabase.rpc("match_programs", {
-        "query_embedding": embedding,
-        "match_count": 6
-    }).execute()
+    result = llm(f"""You are a residency match advisor using real NRMP 2026 data.
 
-    programs = result.data
-    context = "\n".join([
-        f"- {p['name']} ({p['location']}): avg Step2={p['avg_step2']}, "
-        f"IMG friendly={p['img_friendly']}, IMG match rate={p['match_rate_img']}, "
-        f"visa={p['visa_sponsorship']}, type={p['program_type']}"
-        for p in programs
-    ])
-
-    # Step 3: Call Llama 3 with retrieved context
-    response = groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{
-            "role": "user",
-            "content": f"""You are a residency match advisor. Use the real program data below to recommend programs.
-
-Applicant profile:
+Applicant:
 - Step 2 CK: {profile.step2_score}
 - Specialty: {profile.specialty}
 - Graduate type: {profile.grad_type}
@@ -66,10 +99,62 @@ Applicant profile:
 Real program data:
 {context}
 
-Based on this data, classify the programs into reach, match, and safe categories for this applicant. Explain your reasoning for each."""
-        }]
-    )
+Classify into reach, match, and safe programs with reasoning.""")
+
     return {
-        "result": response.choices[0].message.content,
+        "result": result,
         "programs_used": [p["name"] for p in programs]
+    }
+
+@app.post("/chat")
+def chat(msg: ChatMessage):
+    intent = classify_intent(msg.message)
+    programs_used = []
+
+    if intent == "match programs to applicant profile":
+        programs = retrieve_programs(msg.message, msg.specialty)
+        context = format_programs(programs)
+        programs_used = [p["name"] for p in programs]
+        prompt = f"""You are a residency match advisor. The user asked: "{msg.message}"
+
+Real NRMP 2026 program data:
+{context}
+
+Answer their question using this data."""
+
+    elif intent == "search programs by location or state":
+        programs = retrieve_programs(msg.message, msg.specialty)
+        context = format_programs(programs)
+        programs_used = [p["name"] for p in programs]
+        prompt = f"""You are a residency program search assistant. The user asked: "{msg.message}"
+
+Relevant programs from NRMP 2026:
+{context}
+
+List and describe the relevant programs."""
+
+    elif intent == "ask about visa sponsorship":
+        programs = retrieve_programs(msg.message + " visa H1B J1", msg.specialty)
+        context = format_programs(programs)
+        programs_used = [p["name"] for p in programs]
+        prompt = f"""You are a residency visa advisor. The user asked: "{msg.message}"
+
+Programs with visa data:
+{context}
+
+Answer their visa question using this data."""
+
+    else:
+        # General strategy / observership / other — pure LLM no retrieval
+        prompt = f"""You are an expert residency application advisor for USMLE graduates and IMGs.
+        
+The user asked: "{msg.message}"
+
+Give a helpful, specific answer."""
+
+    result = llm(prompt)
+    return {
+        "intent": intent,
+        "result": result,
+        "programs_used": programs_used
     }
