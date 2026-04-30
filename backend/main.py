@@ -42,16 +42,29 @@ def retrieve_programs(query: str, specialty: str = "", limit: int = 6):
     if specialty:
         result = supabase.rpc("match_programs_by_specialty", {
             "query_embedding": embedding,
-            "match_count": limit,
+            "match_count": limit * 2,
             "filter_specialty": specialty
         }).execute()
         if result.data:
-            return result.data
+            # Deduplicate by name
+            seen = set()
+            unique = []
+            for p in result.data:
+                if p["name"] not in seen:
+                    seen.add(p["name"])
+                    unique.append(p)
+            return unique[:limit]
     result = supabase.rpc("match_programs", {
         "query_embedding": embedding,
-        "match_count": limit
+        "match_count": limit * 2
     }).execute()
-    return result.data
+    seen = set()
+    unique = []
+    for p in result.data:
+        if p["name"] not in seen:
+            seen.add(p["name"])
+            unique.append(p)
+    return unique[:limit]
 
 def format_programs(programs):
     return "\n".join([
@@ -147,10 +160,9 @@ Answer their visa question using this data."""
     else:
         # General strategy / observership / other — pure LLM no retrieval
         prompt = f"""You are an expert residency application advisor for USMLE graduates and IMGs.
-        
-The user asked: "{msg.message}"
+ The user asked: "{msg.message}"
 
-Give a helpful, specific answer."""
+Give a helpful, specific answer. If you mention any websites or links, only mention the main domain homepage (e.g. aamc.org, nrmp.org) — do not generate specific URLs or page paths as they may be inaccurate. Tell the user to search for the resource by name instead."""
 
     result = llm(prompt)
     return {
