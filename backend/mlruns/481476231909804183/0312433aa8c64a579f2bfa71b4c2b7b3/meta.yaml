@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/hashirabdullah/Documents/project%201/matchmd/backend/mlruns/481476231909804183/0312433aa8c64a579f2bfa71b4c2b7b3/artifacts
+end_time: 1777589748695
+entry_point_name: ''
+experiment_id: '481476231909804183'
+lifecycle_stage: active
+run_id: 0312433aa8c64a579f2bfa71b4c2b7b3
+run_name: aged-lark-221
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1777589745775
+status: 3
+tags: []
+user_id: hashirabdullah

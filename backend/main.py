@@ -5,6 +5,8 @@ from groq import Groq
 from supabase import create_client
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline
+import xgboost as xgb
+import numpy as np
 import os
 from dotenv import load_dotenv
 
@@ -22,6 +24,8 @@ app.add_middleware(
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
+match_model = xgb.XGBClassifier()
+match_model.load_model("match_predictor.json")
 classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
 INTENTS = [
@@ -114,9 +118,27 @@ Real program data:
 
 Classify into reach, match, and safe programs with reasoning.""")
 
+    # ML match probability
+    is_img = 1 if "IMG" in profile.grad_type else 0
+    avg_img_rate = sum(float(p["match_rate_img"] or 0) for p in programs) / len(programs) if programs else 0.3
+    avg_img_friendly = 1 if sum(int(p["img_friendly"] or 0) for p in programs) / len(programs) > 0.5 else 0
+
+    features = np.array([[
+        profile.step2_score,
+        0,
+        0,
+        is_img,
+        avg_img_friendly,
+        avg_img_rate
+    ]])
+    prob = match_model.predict_proba(features)[0][1]
+
     return {
         "result": result,
-        "programs_used": [p["name"] for p in programs]
+        "programs_used": [p["name"] for p in programs],
+        "match_probability": round(float(prob), 3),
+        "match_percentage": f"{round(float(prob) * 100, 1)}%",
+        "tier": "strong" if prob > 0.7 else "moderate" if prob > 0.4 else "reach"
     }
 
 @app.post("/chat")
@@ -169,4 +191,28 @@ Give a helpful, specific answer. If you mention any websites or links, only ment
         "intent": intent,
         "result": result,
         "programs_used": programs_used
+    }
+class PredictRequest(BaseModel):
+    step2_score: int
+    usce_months: int = 0
+    research_pubs: int = 0
+    is_img: int = 1
+    img_friendly_program: int = 1
+    program_img_match_rate: float = 0.3
+
+@app.post("/predict")
+def predict(req: PredictRequest):
+    features = np.array([[
+        req.step2_score,
+        req.usce_months,
+        req.research_pubs,
+        req.is_img,
+        req.img_friendly_program,
+        req.program_img_match_rate
+    ]])
+    prob = match_model.predict_proba(features)[0][1]
+    return {
+        "match_probability": round(float(prob), 3),
+        "percentage": f"{round(float(prob) * 100, 1)}%",
+        "tier": "strong" if prob > 0.7 else "moderate" if prob > 0.4 else "reach"
     }

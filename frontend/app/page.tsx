@@ -17,6 +17,7 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [programs, setPrograms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [matchProb, setMatchProb] = useState<{percentage: string, tier: string} | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     { role: "ai", content: "Hi! I can help you find residency programs, answer visa questions, or give application advice. What would you like to know?" }
   ]);
@@ -38,6 +39,7 @@ export default function Home() {
     const data = await res.json();
     setResult(data.result);
     setPrograms(data.programs_used || []);
+    if (data.match_percentage) setMatchProb({ percentage: data.match_percentage, tier: data.tier });
     setLoading(false);
   };
 
@@ -47,6 +49,7 @@ export default function Home() {
     setChatInput("");
     setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setChatLoading(true);
+
     const res = await fetch("http://localhost:8000/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -75,6 +78,7 @@ export default function Home() {
           RAG-powered · Intent classifier · 1,062 real NRMP 2026 programs
         </div>
 
+        {/* Match Finder */}
         <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
           <h2 className="text-sm font-medium text-gray-700 mb-4">Match Finder</h2>
           <div className="flex flex-col gap-4">
@@ -129,23 +133,35 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-2">
               {programs.map((p, i) => (
-                <span key={`prog-${i}`} className="bg-purple-50 border border-purple-200 text-purple-700 text-xs px-3 py-1 rounded-full">
-                  {p}
-                </span>
-              ))}
+             <span key={`${p}-${i}`} className="bg-purple-50 border border-purple-200 text-purple-700 text-xs px-3 py-1 rounded-full">
+            {p}
+            </span>
+            ))}
             </div>
           </div>
         )}
 
         {result && (
           <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-              Your Match Analysis
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                Your Match Analysis
+              </h2>
+              {matchProb && (
+                <div className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                  matchProb.tier === "strong" ? "bg-green-50 text-green-700 border-green-200" :
+                  matchProb.tier === "moderate" ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
+                  "bg-red-50 text-red-700 border-red-200"
+                }`}>
+                  ML prediction: {matchProb.percentage} match probability
+                </div>
+              )}
+            </div>
             <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{result}</p>
           </div>
         )}
 
+        {/* Chatbot */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
           <div className="p-4 border-b">
             <h2 className="text-sm font-medium text-gray-700">Ask Anything</h2>
@@ -168,8 +184,8 @@ export default function Home() {
                 )}
                 {msg.programs && msg.programs.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1 max-w-xs lg:max-w-md">
-                    {msg.programs.map((p, j) => (
-                      <span key={`chat-prog-${i}-${j}`} className="text-xs bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full">
+                    {msg.programs.map(p => (
+                      <span key={p} className="text-xs bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full">
                         {p}
                       </span>
                     ))}

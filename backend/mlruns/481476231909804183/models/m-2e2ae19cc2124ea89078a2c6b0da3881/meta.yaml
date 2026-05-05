@@ -1,0 +1,10 @@
+artifact_location: file:///Users/hashirabdullah/Documents/project%201/matchmd/backend/mlruns/481476231909804183/models/m-2e2ae19cc2124ea89078a2c6b0da3881/artifacts
+creation_timestamp: 1777589746657
+experiment_id: '481476231909804183'
+last_updated_timestamp: 1777589748690
+model_id: m-2e2ae19cc2124ea89078a2c6b0da3881
+model_type: null
+name: model
+source_run_id: 0312433aa8c64a579f2bfa71b4c2b7b3
+status: 2
+status_message: null

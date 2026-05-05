@@ -1,0 +1,22 @@
+artifact_path: file:///Users/hashirabdullah/Documents/project%201/matchmd/backend/mlruns/481476231909804183/models/m-2e2ae19cc2124ea89078a2c6b0da3881/artifacts
+flavors:
+  python_function:
+    data: model.xgb
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.9.6
+  xgboost:
+    code: null
+    data: model.xgb
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: xgb
+    xgb_version: 2.1.4
+mlflow_version: 3.1.4
+model_id: m-2e2ae19cc2124ea89078a2c6b0da3881
+model_size_bytes: 171630
+model_uuid: m-2e2ae19cc2124ea89078a2c6b0da3881
+prompts: null
+run_id: 0312433aa8c64a579f2bfa71b4c2b7b3
+utc_time_created: '2026-04-30 22:55:46.667176'
