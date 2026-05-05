@@ -32,6 +32,7 @@ User query → Intent Classifier (BART) → Route to handler → RAG retrieval (
 | Accuracy | 91.5% |
 | ROC AUC | 0.960 |
 | CV AUC (5-fold) | 0.961 ± 0.001 |
+| Eval pass rate | 10/10 (100%) |
 
 ## Running Locally
 
