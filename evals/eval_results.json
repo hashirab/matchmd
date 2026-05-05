@@ -1,0 +1,148 @@
+{
+  "timestamp": "2026-05-05T23:41:53.057443",
+  "passed": 10,
+  "total": 10,
+  "pass_rate": 100.0,
+  "results": [
+    {
+      "id": 1,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.982,
+      "programs_used": [
+        "Internal Medicine \u2014 UTAH",
+        "Internal Medicine \u2014 NORTH DAKOTA",
+        "Internal Medicine \u2014 MASSACHUSETTS"
+      ],
+      "notes": "High scoring US MD should get strong match probability"
+    },
+    {
+      "id": 2,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.017,
+      "programs_used": [
+        "Internal Medicine \u2014 UTAH",
+        "Internal Medicine \u2014 ALASKA",
+        "Internal Medicine \u2014 NORTH DAKOTA"
+      ],
+      "notes": "Low scoring IMG should be classified as reach for competitive programs"
+    },
+    {
+      "id": 3,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.132,
+      "programs_used": [
+        "Psychiatry \u2014 MINNESOTA",
+        "Psychiatry \u2014 PUERTO RICO",
+        "Psychiatry \u2014 UTAH"
+      ],
+      "notes": "Average IMG score for Psychiatry should return all three tiers"
+    },
+    {
+      "id": 4,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.192,
+      "programs_used": [
+        "Family Medicine \u2014 UTAH",
+        "Family Medicine \u2014 RHODE ISLAND",
+        "Family Medicine \u2014 HAWAII"
+      ],
+      "notes": "High scoring USIMG for Family Medicine should have good options"
+    },
+    {
+      "id": 5,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.062,
+      "programs_used": [
+        "Emergency Medicine \u2014 PUERTO RICO",
+        "Emergency Medicine \u2014 IOWA",
+        "Emergency Medicine \u2014 CALIFORNIA"
+      ],
+      "notes": "EM is competitive for IMGs even with decent scores"
+    },
+    {
+      "id": 6,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.015,
+      "programs_used": [
+        "GEORGIA (cont.) Pos. Filled Sr Gr Sr Gr IMG IMGOthMD Sr Tot Neurology \u2014 FLORIDA",
+        "Neurology \u2014 MINNESOTA",
+        "Neurology \u2014 CALIFORNIA"
+      ],
+      "notes": "Very low score IMG for Neurology \u2014 should be mostly reach"
+    },
+    {
+      "id": 7,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.972,
+      "programs_used": [
+        "Surgery \u2014 SOUTH DAKOTA",
+        "Medicine/Internal Vascular Surgery \u2014 LOUISIANA",
+        "Surgery \u2014 MASSACHUSETTS"
+      ],
+      "notes": "High US MD for Surgery \u2014 competitive but viable"
+    },
+    {
+      "id": 8,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.033,
+      "programs_used": [
+        "Pediatrics/Medical Genetics \u2014 CALIFORNIA",
+        "Pediatrics/Medical Genetics \u2014 ILLINOIS",
+        "Pediatrics/Medical Genetics \u2014 MASSACHUSETTS"
+      ],
+      "notes": "Average IMG for Pediatrics should return mixed tiers"
+    },
+    {
+      "id": 9,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.975,
+      "programs_used": [
+        "Internal Medicine \u2014 NORTH DAKOTA",
+        "Internal Medicine/Medical \u2014 NORTH CAROLINA",
+        "Internal Medicine \u2014 UTAH"
+      ],
+      "notes": "DO grad with good score for IM should have solid options"
+    },
+    {
+      "id": 10,
+      "passed": true,
+      "keyword_score": 1.0,
+      "tier_pass": true,
+      "programs_retrieved": true,
+      "match_probability": 0.026,
+      "programs_used": [
+        "Psychiatry \u2014 MINNESOTA",
+        "Psychiatry \u2014 PUERTO RICO",
+        "Psychiatry \u2014 CONNECTICUT"
+      ],
+      "notes": "Below average IMG for Psychiatry \u2014 safe programs should be available"
+    }
+  ]
+}

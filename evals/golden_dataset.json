@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "profile": {"step2_score": 260, "specialty": "Internal Medicine", "grad_type": "US MD graduate"},
+    "expected_tier": "strong",
+    "expected_keywords": ["reach", "match", "safe"],
+    "notes": "High scoring US MD should get strong match probability"
+  },
+  {
+    "id": 2,
+    "profile": {"step2_score": 215, "specialty": "Internal Medicine", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "reach",
+    "expected_keywords": ["reach", "safe", "IMG"],
+    "notes": "Low scoring IMG should be classified as reach for competitive programs"
+  },
+  {
+    "id": 3,
+    "profile": {"step2_score": 240, "specialty": "Psychiatry", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "moderate",
+    "expected_keywords": ["reach", "match", "safe"],
+    "notes": "Average IMG score for Psychiatry should return all three tiers"
+  },
+  {
+    "id": 4,
+    "profile": {"step2_score": 255, "specialty": "Family Medicine", "grad_type": "IMG — US citizen (USIMG)"},
+    "expected_tier": "reach",
+    "expected_keywords": ["match", "safe"],
+    "notes": "High scoring USIMG for Family Medicine should have good options"
+  },
+  {
+    "id": 5,
+    "profile": {"step2_score": 230, "specialty": "Emergency Medicine", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "reach",
+    "expected_keywords": ["reach", "IMG", "match"],
+    "notes": "EM is competitive for IMGs even with decent scores"
+  },
+  {
+    "id": 6,
+    "profile": {"step2_score": 200, "specialty": "Neurology", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "reach",
+    "expected_keywords": ["reach", "safe"],
+    "notes": "Very low score IMG for Neurology — should be mostly reach"
+  },
+  {
+    "id": 7,
+    "profile": {"step2_score": 258, "specialty": "General Surgery", "grad_type": "US MD graduate"},
+    "expected_tier": "strong",
+    "expected_keywords": ["reach", "match"],
+    "notes": "High US MD for Surgery — competitive but viable"
+  },
+  {
+    "id": 8,
+    "profile": {"step2_score": 235, "specialty": "Pediatrics", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "reach",
+    "expected_keywords": ["IMG", "match", "safe"],
+    "notes": "Average IMG for Pediatrics should return mixed tiers"
+  },
+  {
+    "id": 9,
+    "profile": {"step2_score": 245, "specialty": "Internal Medicine", "grad_type": "US DO graduate"},
+    "expected_tier": "strong",
+    "expected_keywords": ["match", "safe"],
+    "notes": "DO grad with good score for IM should have solid options"
+  },
+  {
+    "id": 10,
+    "profile": {"step2_score": 220, "specialty": "Psychiatry", "grad_type": "IMG — Non-US/Canadian school"},
+    "expected_tier": "reach",
+    "expected_keywords": ["safe", "IMG", "match"],
+    "notes": "Below average IMG for Psychiatry — safe programs should be available"
+  }
+]
