@@ -9,11 +9,7 @@ interface ChatMessage {
 }
 
 export default function Home() {
-  const [form, setForm] = useState({
-    step2_score: "",
-    specialty: "",
-    grad_type: "",
-  });
+  const [form, setForm] = useState({ step2_score: "", specialty: "", grad_type: "" });
   const [result, setResult] = useState("");
   const [programs, setPrograms] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,13 +24,11 @@ export default function Home() {
     setLoading(true);
     setResult("");
     setPrograms([]);
+    setMatchProb(null);
     const res = await fetch("http://localhost:8000/match", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        step2_score: parseInt(form.step2_score),
-      }),
+      body: JSON.stringify({ ...form, step2_score: parseInt(form.step2_score) }),
     });
     const data = await res.json();
     setResult(data.result);
@@ -49,143 +43,203 @@ export default function Home() {
     setChatInput("");
     setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setChatLoading(true);
-
     const res = await fetch("http://localhost:8000/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: userMsg,
-        specialty: form.specialty || ""
-      }),
+      body: JSON.stringify({ message: userMsg, specialty: form.specialty || "" }),
     });
     const data = await res.json();
     setChatMessages(prev => [...prev, {
-      role: "ai",
-      content: data.result,
-      intent: data.intent,
-      programs: data.programs_used
+      role: "ai", content: data.result, intent: data.intent, programs: data.programs_used
     }]);
     setChatLoading(false);
   };
 
+  const tierColor = (tier: string) => {
+    if (tier === "strong") return "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+    if (tier === "moderate") return "text-yellow-400 border-yellow-500/30 bg-yellow-500/10";
+    return "text-red-400 border-red-500/30 bg-red-500/10";
+  };
+
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">MatchMD</h1>
-        <p className="text-gray-500 mb-2">AI-powered residency match advisor</p>
-        <div className="inline-flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-full px-3 py-1 text-xs text-purple-700 font-medium mb-8">
-          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-          RAG-powered · Intent classifier · 1,062 real NRMP 2026 programs
+    <main className="min-h-screen" style={{background: '#0a0a0f'}}>
+
+      {/* Hero */}
+      <div className="hero-glow">
+        <div className="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-6"
+            style={{background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa'}}>
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            RAG-powered · 1,062 real NRMP 2026 programs · XGBoost ML model
+          </div>
+          <h1 className="text-5xl font-bold mb-4 tracking-tight">
+            <span className="gradient-text">MatchMD</span>
+          </h1>
+          <p className="text-xl mb-3" style={{color: 'rgba(255,255,255,0.7)'}}>
+            AI-powered residency match advisor for USMLE graduates
+          </p>
+          <p className="text-sm" style={{color: 'rgba(255,255,255,0.35)'}}>
+            Real program data · Intent-classified chat · ML match probability
+          </p>
+
+          {/* Stats */}
+          <div className="flex justify-center gap-8 mt-10">
+            {[
+              {num: "1,062", label: "NRMP Programs"},
+              {num: "0.96", label: "Model AUC"},
+              {num: "10/10", label: "Eval Score"},
+              {num: "6", label: "Intent Types"},
+            ].map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="text-2xl font-bold gradient-text">{s.num}</div>
+                <div className="text-xs mt-1" style={{color: 'rgba(255,255,255,0.4)'}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-3xl mx-auto px-6 pb-20">
 
         {/* Match Finder */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
-          <h2 className="text-sm font-medium text-gray-700 mb-4">Match Finder</h2>
-          <div className="flex flex-col gap-4">
+        <div className="card-dark rounded-2xl p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{background: 'rgba(124,58,237,0.2)'}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Step 2 CK Score</label>
+              <h2 className="font-semibold text-white text-sm">Match Finder</h2>
+              <p className="text-xs" style={{color: 'rgba(255,255,255,0.4)'}}>Enter your profile to find best-match programs</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="text-xs font-medium mb-1.5 block" style={{color: 'rgba(255,255,255,0.5)'}}>Step 2 CK Score</label>
               <input
                 type="number"
                 placeholder="e.g. 240"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white"
+                className="input-dark w-full rounded-xl px-4 py-2.5 text-sm"
                 value={form.step2_score}
                 onChange={(e) => setForm({ ...form, step2_score: e.target.value })}
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Desired Specialty</label>
+              <label className="text-xs font-medium mb-1.5 block" style={{color: 'rgba(255,255,255,0.5)'}}>Desired Specialty</label>
               <input
                 type="text"
                 placeholder="e.g. Internal Medicine"
-                className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white"
+                className="input-dark w-full rounded-xl px-4 py-2.5 text-sm"
                 value={form.specialty}
                 onChange={(e) => setForm({ ...form, specialty: e.target.value })}
               />
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Graduate Type</label>
-              <select
-                className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white"
-                value={form.grad_type}
-                onChange={(e) => setForm({ ...form, grad_type: e.target.value })}
-              >
-                <option value="">Select...</option>
-                <option>IMG — Non-US/Canadian school</option>
-                <option>IMG — US citizen (USIMG)</option>
-                <option>US MD graduate</option>
-                <option>US DO graduate</option>
-              </select>
-            </div>
-            <button
-              onClick={handleSubmit}
-              disabled={loading || !form.step2_score || !form.specialty || !form.grad_type}
-              className="bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? "Analysing your profile..." : "Find My Best-Match Programs"}
-            </button>
           </div>
+
+          <div className="mb-5">
+            <label className="text-xs font-medium mb-1.5 block" style={{color: 'rgba(255,255,255,0.5)'}}>Graduate Type</label>
+            <select
+              className="input-dark w-full rounded-xl px-4 py-2.5 text-sm"
+              value={form.grad_type}
+              onChange={(e) => setForm({ ...form, grad_type: e.target.value })}
+            >
+              <option style={{background:'#1a1a2e'}}>IMG — Non-US/Canadian school (international citizen, foreign medical school)</option>
+              <option style={{background:'#1a1a2e'}}>IMG — US citizen (USIMG) (US citizen, foreign medical school)</option>
+              <option style={{background:'#1a1a2e'}}>US MD graduate (US/Canadian allopathic medical school)</option>
+              <option style={{background:'#1a1a2e'}}>US DO graduate (US osteopathic medical school)</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !form.step2_score || !form.specialty || !form.grad_type}
+            className="btn-primary w-full rounded-xl py-3 text-sm font-semibold text-white cursor-pointer"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
+                  <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Analysing your profile...
+              </span>
+            ) : "Find My Best-Match Programs →"}
+          </button>
         </div>
 
+        {/* Programs retrieved */}
         {programs.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border p-4 mb-4">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-              Programs retrieved from NRMP 2026 database
+          <div className="card-dark rounded-2xl p-4 mb-4">
+            <p className="text-xs font-medium mb-3" style={{color: 'rgba(255,255,255,0.4)'}}>
+              PROGRAMS RETRIEVED FROM NRMP 2026 DATABASE
             </p>
             <div className="flex flex-wrap gap-2">
               {programs.map((p, i) => (
-             <span key={`${p}-${i}`} className="bg-purple-50 border border-purple-200 text-purple-700 text-xs px-3 py-1 rounded-full">
-            {p}
-            </span>
-            ))}
+                <span key={`prog-${i}`} className="text-xs px-3 py-1 rounded-full font-medium"
+                  style={{background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa'}}>
+                  {p}
+                </span>
+              ))}
             </div>
           </div>
         )}
 
+        {/* Match result */}
         {result && (
-          <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+          <div className="card-dark rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                Your Match Analysis
-              </h2>
+              <p className="text-xs font-medium" style={{color: 'rgba(255,255,255,0.4)'}}>YOUR MATCH ANALYSIS</p>
               {matchProb && (
-                <div className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                  matchProb.tier === "strong" ? "bg-green-50 text-green-700 border-green-200" :
-                  matchProb.tier === "moderate" ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
-                  "bg-red-50 text-red-700 border-red-200"
-                }`}>
-                  ML prediction: {matchProb.percentage} match probability
-                </div>
+                <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${tierColor(matchProb.tier)}`}>
+                  ML: {matchProb.percentage} match probability
+                </span>
               )}
             </div>
-            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{result}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{color: 'rgba(255,255,255,0.8)'}}>
+              {result}
+            </p>
           </div>
         )}
 
         {/* Chatbot */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          <div className="p-4 border-b">
-            <h2 className="text-sm font-medium text-gray-700">Ask Anything</h2>
-            <p className="text-xs text-gray-400 mt-1">Visa questions · Program search · Application strategy</p>
+        <div className="card-dark rounded-2xl overflow-hidden">
+          <div className="px-6 py-4" style={{borderBottom: '1px solid rgba(255,255,255,0.06)'}}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{background: 'rgba(124,58,237,0.2)'}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h2 className="font-semibold text-white text-sm">Ask Anything</h2>
+                <p className="text-xs" style={{color: 'rgba(255,255,255,0.4)'}}>Visa questions · Program search · Application strategy</p>
+              </div>
+            </div>
           </div>
-          <div className="p-4 flex flex-col gap-3 min-h-64 max-h-96 overflow-y-auto">
+
+          <div className="p-4 flex flex-col gap-3 overflow-y-auto scrollbar-hide" style={{minHeight: '280px', maxHeight: '420px'}}>
             {chatMessages.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-gray-900 text-white rounded-br-sm"
-                    : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                }`}>
+                <div className={`max-w-sm px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "user" ? "chat-user text-white rounded-br-sm" : "chat-ai rounded-bl-sm"
+                }`} style={msg.role === "ai" ? {color: 'rgba(255,255,255,0.8)'} : {}}>
                   {msg.content}
                 </div>
                 {msg.intent && (
-                  <span className="text-xs text-gray-400 mt-1 px-1">
-                    Intent: {msg.intent}
+                  <span className="text-xs mt-1 px-1" style={{color: 'rgba(255,255,255,0.25)'}}>
+                    intent: {msg.intent}
                   </span>
                 )}
                 {msg.programs && msg.programs.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1 max-w-xs lg:max-w-md">
-                    {msg.programs.map(p => (
-                      <span key={p} className="text-xs bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full">
+                  <div className="flex flex-wrap gap-1 mt-1.5 max-w-sm">
+                    {msg.programs.map((p, j) => (
+                      <span key={`chat-${i}-${j}`} className="text-xs px-2 py-0.5 rounded-full"
+                        style={{background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa'}}>
                         {p}
                       </span>
                     ))}
@@ -195,17 +249,19 @@ export default function Home() {
             ))}
             {chatLoading && (
               <div className="flex items-start">
-                <div className="bg-gray-100 text-gray-400 text-sm px-4 py-2 rounded-2xl rounded-bl-sm italic">
+                <div className="chat-ai px-4 py-2.5 rounded-2xl rounded-bl-sm text-sm italic"
+                  style={{color: 'rgba(255,255,255,0.4)'}}>
                   Thinking...
                 </div>
               </div>
             )}
           </div>
-          <div className="p-4 border-t flex gap-2">
+
+          <div className="px-4 py-3 flex gap-2" style={{borderTop: '1px solid rgba(255,255,255,0.06)'}}>
             <input
               type="text"
               placeholder="Ask about programs, visas, strategy..."
-              className="flex-1 border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white"
+              className="input-dark flex-1 rounded-xl px-4 py-2.5 text-sm"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") sendChat(); }}
@@ -213,11 +269,18 @@ export default function Home() {
             <button
               onClick={sendChat}
               disabled={chatLoading || !chatInput.trim()}
-              className="bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-700 disabled:opacity-40"
+              className="btn-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
             >
               Send
             </button>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-xs" style={{color: 'rgba(255,255,255,0.2)'}}>
+            Built with FastAPI · Next.js · pgvector · XGBoost · Llama 3.3
+          </p>
         </div>
       </div>
     </main>
