@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from groq import Groq
 from supabase import create_client
 from sentence_transformers import SentenceTransformer
-from transformers import pipeline
 import xgboost as xgb
 import numpy as np
 import os
@@ -26,20 +25,21 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 encoder = SentenceTransformer("all-MiniLM-L6-v2")
 match_model = xgb.XGBClassifier()
 match_model.load_model("match_predictor.json")
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
 
-INTENTS = [
-    "match programs to applicant profile",
-    "search programs by location or state",
-    "ask about application strategy or tips",
-    "ask about visa sponsorship",
-    "ask about observerships or clinical experience",
-    "general residency question"
-]
 
 def classify_intent(message: str) -> str:
-    result = classifier(message, INTENTS)
-    return result["labels"][0]
+    msg = message.lower()
+    if any(w in msg for w in ["match", "step", "score", "qualify", "chance", "program for me"]):
+        return "match programs to applicant profile"
+    if any(w in msg for w in ["location", "state", "city", "texas", "new york", "california", "show me", "find programs"]):
+        return "search programs by location or state"
+    if any(w in msg for w in ["h1b", "j1", "visa", "sponsor", "immigration"]):
+        return "ask about visa sponsorship"
+    if any(w in msg for w in ["observership", "elective", "usce", "clinical experience", "rotation"]):
+        return "ask about observerships or clinical experience"
+    if any(w in msg for w in ["personal statement", "interview", "soap", "lor", "strategy", "apply", "application"]):
+        return "ask about application strategy or tips"
+    return "general residency question"
 
 def retrieve_programs(query: str, specialty: str = "", limit: int = 6):
     embedding = encoder.encode(query).tolist()
