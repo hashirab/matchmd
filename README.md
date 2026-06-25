@@ -6,6 +6,12 @@ Full-stack AI application helping USMLE graduates find best-match residency prog
 
 User query → Intent Classifier (BART) → Route to handler → RAG retrieval (pgvector) → LLM (Llama 3.3) → Response + ML probability score
 
+## Live Demo
+
+- **Frontend:** https://matchmd-hashrem.vercel.app
+- **Backend API:** https://matchmd-production.up.railway.app
+- **Health check:** https://matchmd-production.up.railway.app/health
+
 ## Key Features
 
 - **RAG pipeline** — 1,062 real NRMP 2026 programs embedded with sentence-transformers, stored in PostgreSQL/pgvector, retrieved at query time to ground LLM responses in real match data
