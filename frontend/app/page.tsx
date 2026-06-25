@@ -25,7 +25,7 @@ export default function Home() {
     setResult("");
     setPrograms([]);
     setMatchProb(null);
-    const res = await fetch("http://localhost:8000/match", {
+    const res = await fetch("https://matchmd-production.up.railway.app/match", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, step2_score: parseInt(form.step2_score) }),
@@ -43,7 +43,7 @@ export default function Home() {
     setChatInput("");
     setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
     setChatLoading(true);
-    const res = await fetch("http://localhost:8000/chat", {
+    const res = await fetch("https://matchmd-production.up.railway.app/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg, specialty: form.specialty || "" }),
